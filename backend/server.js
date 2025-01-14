@@ -61,6 +61,29 @@ app.post('/create-account', async (req, res) => {
   }
 });
 
+// Add this route to check if the username exists
+app.post('/check-username', async (req, res) => {
+    const { username } = req.body;  // Get the username from the request body
+
+    if (!username) {
+        return res.status(400).json({ error: 'Username is required' });
+    }
+
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+
+        if (result.rows.length > 0) {
+            return res.json({ exists: true });
+        } else {
+            return res.json({ exists: false });
+        }
+    } catch (error) {
+        console.error('Error checking username:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
+
 // Start the server
 app.listen(5001, () => {
   console.log('Server is running on http://localhost:5001');

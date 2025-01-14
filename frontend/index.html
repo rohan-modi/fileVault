@@ -23,12 +23,31 @@
             const [username, setUsername] = useState('');
             const [error, setError] = useState('');
 
-            const handleLogin = () => {
+            const handleLogin = async () => {
                 if (username.trim()) {
-                    // Save the username to localStorage to persist it
-                    localStorage.setItem('username', username);
-                    // Redirect to the text-box page
-                    window.location.href = 'savePage.html';
+                    // Make a POST request to check if the username exists in the database
+                    try {
+                        const response = await fetch('http://localhost:5001/check-username', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ username: username }),
+                        });
+
+                        const data = await response.json();
+
+                        if (data.exists) {
+                            // Save the username to localStorage to persist it
+                            localStorage.setItem('username', username);
+                            // Redirect to the text-box page
+                            window.location.href = 'savePage.html';
+                        } else {
+                            setError('Username does not exist');
+                        }
+                    } catch (err) {
+                        setError('Error checking username');
+                    }
                 } else {
                     setError('Please enter a username');
                 }
