@@ -83,6 +83,37 @@ app.post('/check-username', async (req, res) => {
     }
 });
 
+// Add this route to check if the username and password match
+app.post('/check-username-password', async (req, res) => {
+    const { username, password } = req.body;  // Get the username and password from the request body
+
+    if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' });
+    }
+
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+
+        if (result.rows.length > 0) {
+            const user = result.rows[0];
+
+            // Compare the provided password with the stored hashed password
+            const passwordMatch = await bcrypt.compare(password, user.user_password);
+
+            if (passwordMatch) {
+                return res.json({ valid: true });
+            } else {
+                return res.json({ valid: false });
+            }
+        } else {
+            return res.json({ valid: false });
+        }
+    } catch (error) {
+        console.error('Error checking username and password:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+
 
 // Start the server
 app.listen(5001, () => {

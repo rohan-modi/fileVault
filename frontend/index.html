@@ -21,35 +21,36 @@
 
         function LoginPage() {
             const [username, setUsername] = useState('');
+            const [password, setPassword] = useState('');
             const [error, setError] = useState('');
 
             const handleLogin = async () => {
-                if (username.trim()) {
-                    // Make a POST request to check if the username exists in the database
+                if (username.trim() && password.trim()) {
+                    // Make a POST request to check if the username and password match
                     try {
-                        const response = await fetch('http://localhost:5001/check-username', {
+                        const response = await fetch('http://localhost:5001/check-username-password', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
                             },
-                            body: JSON.stringify({ username: username }),
+                            body: JSON.stringify({ username, password }),
                         });
 
                         const data = await response.json();
 
-                        if (data.exists) {
+                        if (data.valid) {
                             // Save the username to localStorage to persist it
                             localStorage.setItem('username', username);
                             // Redirect to the text-box page
                             window.location.href = 'savePage.html';
                         } else {
-                            setError('Username does not exist');
+                            setError('Invalid username or password');
                         }
                     } catch (err) {
-                        setError('Error checking username');
+                        setError('Error during login');
                     }
                 } else {
-                    setError('Please enter a username');
+                    setError('Please enter both username and password');
                 }
             };
 
@@ -60,12 +61,18 @@
 
             return (
                 <div>
-                    <h2>Enter your username</h2>
+                    <h2>Enter your username and password</h2>
                     <input
                         type="text"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder="Username"
+                    />
+                    <input
+                        type="text"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Password"
                     />
                     <button onClick={handleLogin}>Login</button>
                     {error && <p style={{ color: 'red' }}>{error}</p>}

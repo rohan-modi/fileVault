@@ -22,6 +22,7 @@
         function TextBoxPage() {
             const [inputValue, setInputValue] = useState('');
             const [username, setUsername] = useState('');
+            const [passwordTitle, setPasswordTitle] = useState('');  // New state for password title
 
             // Check if the username exists in localStorage
             useEffect(() => {
@@ -35,18 +36,30 @@
             }, []);
 
             const handleSaveClick = () => {
-                console.log(inputValue); // Print the input value to the console
+                console.log('Password Title:', passwordTitle);  // Print the password title
+                console.log('Password:', inputValue);  // Print the password
             };
 
             return (
                 <div>
                     <h2>Welcome, {username}!</h2> {/* Display the username here */}
+                    
+                    {/* Input field for password title */}
+                    <input
+                        type="text"
+                        value={passwordTitle}
+                        onChange={(e) => setPasswordTitle(e.target.value)}
+                        placeholder="Enter password title"
+                    />
+
+                    {/* Input field for password */}
                     <input
                         type="text"
                         value={inputValue}
                         onChange={(e) => setInputValue(e.target.value)}
-                        placeholder="Enter text"
+                        placeholder="Enter password"
                     />
+                    
                     <button onClick={handleSaveClick}>Save</button>
                 </div>
             );
