@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PasswordSaver</title>
+    <!-- React and ReactDOM via CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX support -->
+    <script src="https://unpkg.com/@babel/standalone"></script>
+</head>
+<body>
+    <h1>Password Saver</h1>
+    
+    <!-- React component will render here -->
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        function TextBoxPage() {
+            const [inputValue, setInputValue] = useState('');
+            const [username, setUsername] = useState('');
+
+            // Check if the username exists in localStorage
+            useEffect(() => {
+                const savedUsername = localStorage.getItem('username');
+                if (!savedUsername) {
+                    // Redirect to login page if username is not found
+                    window.location.href = 'index.html';
+                } else {
+                    setUsername(savedUsername);  // Set the username to display
+                }
+            }, []);
+
+            const handleSaveClick = () => {
+                console.log(inputValue); // Print the input value to the console
+            };
+
+            return (
+                <div>
+                    <h2>Welcome, {username}!</h2> {/* Display the username here */}
+                    <input
+                        type="text"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        placeholder="Enter text"
+                    />
+                    <button onClick={handleSaveClick}>Save</button>
+                </div>
+            );
+        }
+
+        // Render the TextBoxPage component into the #root div
+        ReactDOM.render(<TextBoxPage />, document.getElementById('root'));
+    </script>
+</body>
+</html>

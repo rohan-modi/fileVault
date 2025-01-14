@@ -3,17 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>fileVault</title>
-    <!-- Link to a CSS file (optional) -->
-    <!-- <link rel="stylesheet" href="styles.css"> -->
+    <title>PasswordSaver</title>
+    <!-- React and ReactDOM via CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel for JSX support -->
+    <script src="https://unpkg.com/@babel/standalone"></script>
 </head>
 <body>
-    <header>
-        <h1>STORE FILES HERE, IT'S SAFE!</h1>
-    </header>
-    <script src="path/to/your/script.js"></script>
-    <!-- Link to a JS file (optional) -->
-    <!-- <script src="script.js"></script> -->
+    <h1>Password Saver</h1>
+
+    <!-- React component will render here -->
+    <div id="root"></div> <!-- This is where React will render the LoginPage component -->
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function LoginPage() {
+            const [username, setUsername] = useState('');
+            const [error, setError] = useState('');
+
+            const handleLogin = () => {
+                if (username.trim()) {
+                    // Save the username to localStorage to persist it
+                    localStorage.setItem('username', username);
+                    // Redirect to the text-box page
+                    window.location.href = 'savePage.html';
+                } else {
+                    setError('Please enter a username');
+                }
+            };
+
+            const handleCreateAccount = () => {
+                // Redirect to create account page
+                window.location.href = 'create-account.html';
+            };
+
+            return (
+                <div>
+                    <h2>Enter your username</h2>
+                    <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Username"
+                    />
+                    <button onClick={handleLogin}>Login</button>
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
+                    <br />
+                    <button onClick={handleCreateAccount}>Create Account</button>
+                </div>
+            );
+        }
+
+        // Render the LoginPage component into the #root div of index.html
+        ReactDOM.render(<LoginPage />, document.getElementById('root'));
+    </script>
 </body>
 </html>

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone"></script>
+</head>
+<body>
+    <h1>Create Account</h1>
+    <div id="root"></div> <!-- React component will render here -->
+
+    <script type="text/babel">
+        const { useState } = React;
+
+        function CreateAccountPage() {
+            const [username, setUsername] = useState('');
+            const [first_name, setFirstName] = useState('');
+            const [last_name, setLastName] = useState('');
+            const [user_password, setPassword] = useState('');
+            const [error, setError] = useState('');
+            const [message, setMessage] = useState('');
+
+            const handleFinishAccount = async () => {
+                if (!first_name || !last_name || !username || !user_password) {
+                    setError('Please fill out all fields.');
+                    return;
+                } else {
+                    console.log("html");
+                    console.log(username);
+                    console.log(first_name);
+                    console.log(last_name);
+                    console.log(user_password);
+                    console.log("html");
+                }
+
+                try {
+                    const response = await fetch('http://localhost:5001/create-account', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, first_name, last_name, user_password }),
+                    });
+
+                    const data = await response.json();
+
+                    if (response.status === 201) {
+                        setMessage(data.message);
+                        setError('');
+                        setUsername('');
+                        setFirstName('');
+                        setLastName('');
+                        setPassword('');
+                    } else {
+                        setError(data.error);
+                    }
+                } catch (err) {
+                    setError('Error creating account');
+                }
+            };
+
+            return (
+                <div>
+                    <h2>Enter Your Details</h2>
+                    <input
+                        type="text"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Username"
+                    />
+                    <input
+                        type="text"
+                        value={first_name}
+                        onChange={(e) => setFirstName(e.target.value)}
+                        placeholder="First Name"
+                    />
+                    <input
+                        type="text"
+                        value={last_name}
+                        onChange={(e) => setLastName(e.target.value)}
+                        placeholder="Last Name"
+                    />
+                    <input
+                        type="text"
+                        value={user_password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Password"
+                    />
+                    <button onClick={handleFinishAccount}>Finish Account</button>
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
+                    {message && <p style={{ color: 'green' }}>{message}</p>}
+                </div>
+            );
+        }
+
+        ReactDOM.render(<CreateAccountPage />, document.getElementById('root'));
+    </script>
+</body>
+</html>
