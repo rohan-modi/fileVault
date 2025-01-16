@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PasswordSaver</title>
+    <title>PasswordSaver - Save Password</title>
     <!-- React and ReactDOM via CDN -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -11,18 +11,20 @@
     <script src="https://unpkg.com/@babel/standalone"></script>
 </head>
 <body>
-    <h1>Password Saver</h1>
-    
+    <h1>Save Your Password</h1>
+
     <!-- React component will render here -->
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        function TextBoxPage() {
-            const [inputValue, setInputValue] = useState('');
-            const [username, setUsername] = useState('');
-            const [passwordTitle, setPasswordTitle] = useState('');  // New state for password title
+        function SavePasswordPage() {
+            const [title, setTitle] = useState('');
+            const [password, setPassword] = useState('');
+            const [savedPasswords, setSavedPasswords] = useState([]);
+            const [message, setMessage] = useState('');
+            const [error, setError] = useState('');
 
             // Check if the username exists in localStorage
             useEffect(() => {
@@ -31,42 +33,126 @@
                     // Redirect to login page if username is not found
                     window.location.href = 'index.html';
                 } else {
-                    setUsername(savedUsername);  // Set the username to display
+                    fetchSavedPasswords(savedUsername);
                 }
             }, []);
+            const fetchSavedPasswords = async (username) => {
+                try {
+                    const response = await fetch('http://localhost:5001/get-saved-passwords', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'username': username,  // Send the logged-in username in headers
+                        },
+                    });
 
-            const handleSaveClick = () => {
-                console.log('Password Title:', passwordTitle);  // Print the password title
-                console.log('Password:', inputValue);  // Print the password
+                    const data = await response.json();
+                    console.log('Fetched Data:', data);  // Inspect the returned data
+
+                    if (response.ok) {
+                        // Parse the response into an array of tuples (if it's a string formatted as such)
+                        const parsedData = parseSavedPasswords(data);
+                        setSavedPasswords(parsedData);
+                    } else {
+                        setError(data.error);
+                    }
+                } catch (error) {
+                    setError('An error occurred while fetching saved passwords');
+                }
+            };
+
+            // Function to parse the string data into an array of tuples
+            const parseSavedPasswords = (data) => {
+                // Check if the data is a string, and if so, parse it
+                if (typeof data === 'string') {
+                    // Convert the string into an array of tuples
+                    const regex = /\(([^)]+)\)/g;
+                    const matches = [...data.matchAll(regex)];
+                    const parsedArray = matches.map(match => match[1].split(',').map(item => item.trim().replace(/['"]+/g, '')));  // Remove quotes and split by comma
+                    return parsedArray;
+                }
+                return [];
+            };
+
+            const handleSaveClick = async () => {
+                const username = localStorage.getItem('username');
+                
+                // Check if title or password is empty
+                if (!title || !password) {
+                    setError('Please provide both title and password.');
+                    return;
+                }
+
+                try {
+                    // Send a POST request to save the password
+                    const response = await fetch('http://localhost:5001/save-password', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'username': username, // Pass the logged-in username as a header
+                        },
+                        body: JSON.stringify({ title, password }),
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        setMessage(data.message);
+                        setTitle('');
+                        setPassword('');
+                        fetchSavedPasswords(username); // Re-fetch saved passwords after saving
+                    } else {
+                        setError(data.error);
+                    }
+                } catch (error) {
+                    setError('An error occurred while saving the password');
+                }
             };
 
             return (
                 <div>
-                    <h2>Welcome, {username}!</h2> {/* Display the username here */}
-                    
-                    {/* Input field for password title */}
-                    <input
-                        type="text"
-                        value={passwordTitle}
-                        onChange={(e) => setPasswordTitle(e.target.value)}
-                        placeholder="Enter password title"
-                    />
+                    <h2>Welcome, {localStorage.getItem('username')}!</h2>
 
-                    {/* Input field for password */}
-                    <input
-                        type="text"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        placeholder="Enter password"
-                    />
-                    
-                    <button onClick={handleSaveClick}>Save</button>
+                    {/* Form for saving a password */}
+                    <div>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="Password Title"
+                        />
+                        <input
+                            type="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="Password"
+                        />
+                        <button onClick={handleSaveClick}>Save Password</button>
+                    </div>
+
+                    {/* Messages for success or error */}
+                    {message && <p style={{ color: 'green' }}>{message}</p>}
+                    {error && <p style={{ color: 'red' }}>{error}</p>}
+
+                    {/* Display saved passwords */}
+                    <h3>Saved Passwords</h3>
+                    <ul>
+                        {savedPasswords.length > 0 ? (
+                            savedPasswords.map((passwordEntry, index) => (
+                                <li key={index}>
+                                    <strong>{passwordEntry[0]}</strong>: {passwordEntry[1]}
+                                </li>
+                            ))
+                        ) : (
+                            <p>No saved passwords.</p>
+                        )}
+                    </ul>
                 </div>
             );
         }
 
-        // Render the TextBoxPage component into the #root div
-        ReactDOM.render(<TextBoxPage />, document.getElementById('root'));
+        // Render the SavePasswordPage component into the #root div
+        ReactDOM.render(<SavePasswordPage />, document.getElementById('root'));
     </script>
 </body>
 </html>
